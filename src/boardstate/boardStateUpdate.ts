@@ -98,7 +98,7 @@ export interface oncePerTurnActions {
 
 export interface PlayerInfo {
     name: string,
-    activePkmn: PkmnCard,
+    activePkmn: PkmnCard | null,
     hand: PkmnCard[],
     discardPile: PkmnCard[],
     prizeCards: PkmnCard[],
@@ -153,12 +153,51 @@ const initialPkmnGameStatus: PkmnGameStatus = {
     toolsAttached: [],
 };
 
+const initialPlayerState: PlayerInfo = {
+    name: "",
+    activePkmn: null,
+    hand: [],
+    discardPile: [],
+    prizeCards: [],
+    deck: [],
+    bench: [],
+    oncePerTurn: {
+        energyAttached: false,
+        retreatPkmn: false,
+        stadiumPlayed: false,
+        supportedUsed: false
+    },
+    playerStatus: {
+        canPlayItems: false,
+        canPlayStadiums: false,
+        canPlaySupporter: false,
+        canPlayEnergy: false,
+        canPlayPkmn: false,
+        canRetreat: false,
+        canDrawCards: false,
+        canPutPkmnFromPlayToHand: false,
+        canPutPkmnFromDiscardToHand: false,
+        canPutCardsFromDiscardToHand: false,
+        canUseAbilities: false,
+        canNotUseAbilitiesPkmnTypes: [],
+        canNotUseAbilitiesPkmnSubTypes: [],
+        canNotUseAttackPkmnTypes: [],
+        canNotUseAttackPkmnSubTypes: []
+    }
+}
+
 const initialState: BoardState = {
     turnNumber: 0,
     startingPlayer: "",
     currentPlayerTurn: "",
     log: "Game started.",
     benchSize: 5,
+    playerA: {
+        ...initialPlayerState
+    },
+    playerB: {
+        ...initialPlayerState
+    }
 }
 
 // If you are not using async thunks you can use the standalone `createSlice`.
@@ -216,7 +255,7 @@ export const BoardStateUpdate = createSlice({
             const currentPlayer = (action.payload.ownerPlayer === "A") ? state.playerA : state.playerB;
             if (!currentPlayer) return;
 
-            if (currentPlayer.activePkmn.gameStatus && currentPlayer.activePkmn === action.payload.target) {
+            if (currentPlayer.activePkmn && currentPlayer.activePkmn.gameStatus && currentPlayer.activePkmn === action.payload.target) {
                 currentPlayer.activePkmn.gameStatus.damage += action.payload.damage;
             } else {
                 for (const i in currentPlayer.bench) {
@@ -236,7 +275,7 @@ export const BoardStateUpdate = createSlice({
             const currentPlayer = (action.payload.ownerPlayer === "A") ? state.playerA : state.playerB;
             if (!currentPlayer) return;
 
-            if (currentPlayer.activePkmn.gameStatus && currentPlayer.activePkmn === action.payload.target) {
+            if (currentPlayer.activePkmn && currentPlayer.activePkmn.gameStatus && currentPlayer.activePkmn === action.payload.target) {
                 currentPlayer.activePkmn.gameStatus.damage = action.payload.damage;
             } else {
                 for (const i in currentPlayer.bench) {
