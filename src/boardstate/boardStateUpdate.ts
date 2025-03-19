@@ -128,8 +128,8 @@ export interface BoardState {
     turnNumber: number,
     startingPlayer: string,
     currentPlayerTurn: string,
-    playerA?: PlayerInfo,
-    playerB?: PlayerInfo,
+    player?: PlayerInfo,
+    opponent?: PlayerInfo,
     log: string,
     stadiumInPlay?: PkmnCard,
     benchSize: number,
@@ -192,10 +192,10 @@ const initialState: BoardState = {
     currentPlayerTurn: "",
     log: "Game started.",
     benchSize: 5,
-    playerA: {
+    player: {
         ...initialPlayerState
     },
-    playerB: {
+    opponent: {
         ...initialPlayerState
     }
 }
@@ -214,17 +214,15 @@ export const BoardStateUpdate = createSlice({
             // immutable state based off those changes
             state.turnNumber += 1;
         },
-        updateActivePkmn: (state, action: PayloadAction<{player: string, pkmn: PkmnCard}>) => {
+        updateActivePkmn: (state, action: PayloadAction<{pkmn: PkmnCard}>) => {
             if (action.payload.pkmn.supertype !== "Pokémon") return;
 
-            if (state.playerA && action.payload.player === "A") {
-                state.playerA.activePkmn = action.payload.pkmn;
-            } else if (state.playerB && action.payload.player === "B") {
-                state.playerB.activePkmn = action.payload.pkmn;
+            if (state.player) {
+                state.player.activePkmn = action.payload.pkmn;
             }
         },
-        drawCards: (state, action: PayloadAction<{player: string, totalDraws: number}>) => {
-            const currentPlayer = (action.payload.player === "A") ? state.playerA : state.playerB;
+        drawCards: (state, action: PayloadAction<{totalDraws: number}>) => {
+            const currentPlayer = state.player;
             if (!currentPlayer) return;
 
             for (let i = 0; i < action.payload.totalDraws; i++) {
@@ -232,27 +230,19 @@ export const BoardStateUpdate = createSlice({
                 currentPlayer.deck.shift(); // Removes the first element and updates the state.
             }
 
-            if (action.payload.player === "A") {
-                state.playerA = currentPlayer;
-            } else {
-                state.playerB = currentPlayer;
-            }
+            state.player = currentPlayer;
         },
-        addCardsToDeck: (state, action: PayloadAction<{player: String, cards: PkmnCard[]}>) => {
-            const currentPlayer = (action.payload.player === "A") ? state.playerA : state.playerB;
+        addCardsToDeck: (state, action: PayloadAction<{cards: PkmnCard[]}>) => {
+            const currentPlayer = state.player;
 
             if (!currentPlayer) return;
 
             currentPlayer.deck = shuffleCards(currentPlayer.deck.concat(action.payload.cards));
 
-            if (action.payload.player === "A") {
-                state.playerA = currentPlayer;
-            } else {
-                state.playerB = currentPlayer;
-            }
+            state.player = currentPlayer;
         },
         updateDamage: (state, action: PayloadAction<{damage: number, ownerPlayer: string, target: PkmnCard}>) => { // Damage can be positive for damage and negative for healing.
-            const currentPlayer = (action.payload.ownerPlayer === "A") ? state.playerA : state.playerB;
+            const currentPlayer = state.player;
             if (!currentPlayer) return;
 
             if (currentPlayer.activePkmn && currentPlayer.activePkmn.gameStatus && currentPlayer.activePkmn === action.payload.target) {
@@ -265,14 +255,10 @@ export const BoardStateUpdate = createSlice({
                 }
             }
 
-            if (action.payload.ownerPlayer === "A") {
-                state.playerA = currentPlayer;
-            } else {
-                state.playerB = currentPlayer;
-            }
+            state.player = currentPlayer;
         },
         setDamage: (state, action: PayloadAction<{damage: number, ownerPlayer: string, target: PkmnCard}>) => { 
-            const currentPlayer = (action.payload.ownerPlayer === "A") ? state.playerA : state.playerB;
+            const currentPlayer = state.player;
             if (!currentPlayer) return;
 
             if (currentPlayer.activePkmn && currentPlayer.activePkmn.gameStatus && currentPlayer.activePkmn === action.payload.target) {
@@ -285,18 +271,14 @@ export const BoardStateUpdate = createSlice({
                 }
             }
 
-            if (action.payload.ownerPlayer === "A") {
-                state.playerA = currentPlayer;
-            } else {
-                state.playerB = currentPlayer;
-            }
+            state.player = currentPlayer;
         },
     },
     // You can define your selectors here. These selectors receive the slice
     // state as their first argument.
     selectors: {
         currentTurn: boardstate => boardstate.turnNumber,
-        playerHand: boardstate => boardstate.playerA?.hand,
+        playerHand: boardstate => boardstate.player?.hand,
     },
 })
 

@@ -22,8 +22,8 @@ export const GameboardPlayerA = () => {
   const GameStart = () => {
     console.log("User decided to start.");
   
-    dispatch(addCardsToDeck({ player: "A", cards: deck }))
-    dispatch(drawCards({ player: "A", totalDraws: 7 }))
+    dispatch(addCardsToDeck({cards: deck }))
+    dispatch(drawCards({totalDraws: 7 }))
   };
   
 
