@@ -8,7 +8,7 @@ const socket = new WebSocket("ws://localhost:8080");
 
 // Connection opened
 socket.addEventListener("open", event => {
-  socket.send("Connection established")
+  socket.send(JSON.stringify({ message: "Connection established" }))
 });
 
 // Listen for messages
@@ -18,8 +18,8 @@ socket.addEventListener("message", event => {
 
 const App = () => {
   return (
-    <Home></Home>
+    <Home socket={socket}></Home>
   )
 }
 
-export default App
+export default App;
